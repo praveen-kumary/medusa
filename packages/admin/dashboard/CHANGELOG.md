@@ -1,5 +1,19 @@
 # @medusajs/dashboard
 
+## 2.22.3
+
+### Patch Changes
+
+- [#17613](https://github.com/medusajs/medusa/pull/17613) [`f0697e1`](https://github.com/medusajs/medusa/commit/f0697e19c8705dd4390a5484abc2bbba2cf516e7) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(utils,dashboard,loyalty-plugin): add the Aruban Florin (AWG) currency
+
+- [#17611](https://github.com/medusajs/medusa/pull/17611) [`ae1da4d`](https://github.com/medusajs/medusa/commit/ae1da4d88ac1ae9cbe345585426a29fac8790e59) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(admin-vite-plugin,dashboard,telemetry,draft-order): update babel to v8
+
+- Updated dependencies []:
+  - @medusajs/js-sdk@2.22.3
+  - @medusajs/admin-shared@2.22.3
+  - @medusajs/icons@2.22.3
+  - @medusajs/ui@4.2.10
+
 ## 2.22.2
 
 ### Patch Changes

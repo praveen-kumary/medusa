@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.22.3
+
+### Patch Changes
+
+- [#17574](https://github.com/medusajs/medusa/pull/17574) [`9692b99`](https://github.com/medusajs/medusa/commit/9692b996485e6fc6e7cb7f6d18ab730962b9727e) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(deps,caching,framework,types,utils): update awilix to 13.0.5
+
 ## 2.22.2
 
 ### Patch Changes

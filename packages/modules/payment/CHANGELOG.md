@@ -1,5 +1,14 @@
 # @medusajs/payment
 
+## 2.22.3
+
+### Patch Changes
+
+- [#17605](https://github.com/medusajs/medusa/pull/17605) [`d4494d9`](https://github.com/medusajs/medusa/commit/d4494d963a2bf3d1cba24e9475012f24f894acb9) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(payment-stripe,payment): update stripe to v23.1.0.
+
+- Updated dependencies [[`9692b99`](https://github.com/medusajs/medusa/commit/9692b996485e6fc6e7cb7f6d18ab730962b9727e), [`2e0d8ae`](https://github.com/medusajs/medusa/commit/2e0d8ae841c64f6c896886153269fe31a6b5d51d)]:
+  - @medusajs/framework@2.22.3
+
 ## 2.22.2
 
 ### Patch Changes

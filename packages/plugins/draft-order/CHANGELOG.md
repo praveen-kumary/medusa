@@ -1,5 +1,21 @@
 # @medusajs/draft-order
 
+## 2.22.3
+
+### Patch Changes
+
+- [#17611](https://github.com/medusajs/medusa/pull/17611) [`ae1da4d`](https://github.com/medusajs/medusa/commit/ae1da4d88ac1ae9cbe345585426a29fac8790e59) Thanks [@shahednasser](https://github.com/shahednasser)! - chore(admin-vite-plugin,dashboard,telemetry,draft-order): update babel to v8
+
+- Updated dependencies [[`f0697e1`](https://github.com/medusajs/medusa/commit/f0697e19c8705dd4390a5484abc2bbba2cf516e7), [`9692b99`](https://github.com/medusajs/medusa/commit/9692b996485e6fc6e7cb7f6d18ab730962b9727e), [`2e0d8ae`](https://github.com/medusajs/medusa/commit/2e0d8ae841c64f6c896886153269fe31a6b5d51d), [`39fb481`](https://github.com/medusajs/medusa/commit/39fb48168d4d63306623cb39f6973bc534a9c59a), [`ae1da4d`](https://github.com/medusajs/medusa/commit/ae1da4d88ac1ae9cbe345585426a29fac8790e59)]:
+  - @medusajs/dashboard@2.22.3
+  - @medusajs/framework@2.22.3
+  - @medusajs/cli@2.22.3
+  - @medusajs/test-utils@2.22.3
+  - @medusajs/js-sdk@2.22.3
+  - @medusajs/admin-sdk@2.22.3
+  - @medusajs/icons@2.22.3
+  - @medusajs/ui@4.2.10
+
 ## 2.22.2
 
 ### Patch Changes

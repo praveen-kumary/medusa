@@ -1,5 +1,14 @@
 # @medusajs/event-bus-redis
 
+## 2.22.3
+
+### Patch Changes
+
+- [#17600](https://github.com/medusajs/medusa/pull/17600) [`255f87a`](https://github.com/medusajs/medusa/commit/255f87afb0572c064f4416e0b19d896146c75ef9) Thanks [@medusa-os-bot](https://github.com/apps/medusa-os-bot)! - fix(event-bus-redis): throw when a partial clearGroupedEvents rewrite fails
+
+- Updated dependencies [[`9692b99`](https://github.com/medusajs/medusa/commit/9692b996485e6fc6e7cb7f6d18ab730962b9727e), [`2e0d8ae`](https://github.com/medusajs/medusa/commit/2e0d8ae841c64f6c896886153269fe31a6b5d51d)]:
+  - @medusajs/framework@2.22.3
+
 ## 2.22.2
 
 ### Patch Changes
