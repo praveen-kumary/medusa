@@ -78,4 +78,76 @@ describe("getComputedActionsForBuyGet", () => {
       ])
     }
   )
+
+  it("should not apply discount to items with is_discountable: false as target items", () => {
+    const buyItem = {
+      id: "item_shirt",
+      quantity: 3,
+      subtotal: 600,
+      original_total: 600,
+      is_discountable: true,
+      product: { id: "prod_1" },
+    } as any
+
+    const nonDiscountableTarget = {
+      id: "item_gift_card",
+      quantity: 1,
+      subtotal: 200,
+      original_total: 200,
+      is_discountable: false,
+      product: { id: "prod_2" },
+    } as any
+
+    const result = getComputedActionsForBuyGet(
+      promotion,
+      [buyItem, nonDiscountableTarget],
+      new Map(),
+      new Map(),
+      new Map()
+    )
+
+    expect(result).toEqual([])
+  })
+
+  it("should allow items with is_discountable: false to satisfy buy rules", () => {
+    const nonDiscountableBuyItem = {
+      id: "item_gift_card",
+      quantity: 3,
+      subtotal: 600,
+      original_total: 600,
+      is_discountable: false,
+      product: { id: "prod_1" },
+    } as any
+
+    const discountableTarget = {
+      id: "item_shirt",
+      quantity: 1,
+      subtotal: 200,
+      original_total: 200,
+      is_discountable: true,
+      product: { id: "prod_2" },
+    } as any
+
+    const result = getComputedActionsForBuyGet(
+      promotion,
+      [nonDiscountableBuyItem, discountableTarget],
+      new Map(),
+      new Map(),
+      new Map()
+    )
+
+    expect(
+      result.map((action: any) => ({
+        ...action,
+        amount: MathBN.convert(action.amount).toNumber(),
+      }))
+    ).toEqual([
+      {
+        action: ComputedActions.ADD_ITEM_ADJUSTMENT,
+        item_id: "item_shirt",
+        amount: 200,
+        code: "BUY3GET1",
+      },
+    ])
+  })
 })
