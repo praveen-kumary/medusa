@@ -142,6 +142,18 @@ moduleIntegrationTestRunner<ILockingModule>({
         const release = await service.release(keyToLock)
         expect(release).toBe(true)
       })
+      it("should release acquired keys when acquiring multiple keys fails on a busy key", async () => {
+        await service.acquire("b", { ownerId: "user_b" })
+
+        await expect(service.acquire(["a", "b"])).rejects.toThrow(
+          'Failed to acquire lock for key "b"'
+        )
+
+        await expect(service.acquire("a")).resolves.toBeUndefined()
+        await expect(service.release("a")).resolves.toBe(true)
+        await expect(service.release("b", { ownerId: "user_b" })).resolves.toBe(true)
+      })
+
     })
 
     it("should release lock in case of failure", async () => {

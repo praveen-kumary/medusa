@@ -65,4 +65,20 @@ describe("RedisLockingProvider Jitter", () => {
     expect(secondDelay).toBeGreaterThanOrEqual(200 * 0.5)
     expect(secondDelay).toBeLessThanOrEqual(200)
   })
+
+  it("should release acquired locks when acquiring multiple keys fails on any key", async () => {
+    redisClientMock.releaseLock = jest.fn().mockResolvedValue(1)
+    redisClientMock.acquireLock.mockImplementation(async (keyName) => {
+      if (keyName === "test:key-1") {
+        return 1
+      }
+      return 0
+    })
+
+    await expect(
+      provider.acquire(["key-1", "key-2"])
+    ).rejects.toThrow('Failed to acquire lock for key "key-2"')
+
+    expect(redisClientMock.releaseLock).toHaveBeenCalledWith("test:key-1", "*")
+  })
 })

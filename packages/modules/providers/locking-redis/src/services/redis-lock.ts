@@ -337,46 +337,63 @@ export class RedisLockingProvider implements ILockingProvider {
     const ownerId = args?.ownerId ?? "*"
     const awaitQueue = args?.awaitQueue ?? false
 
-    const acquirePromises = keys.map(async (key) => {
-      const errMessage = `Failed to acquire lock for key "${key}"`
-      const keyName = this.getKeyName(key)
+    const acquiredKeys = new Set<string>()
 
-      const acquireLock = async () => {
-        while (true) {
-          if (cancellationToken?.cancelled) {
-            throw new MedusaError(MedusaError.Types.CONFLICT, errMessage)
-          }
+    try {
+      const acquirePromises = keys.map(async (key) => {
+        const errMessage = `Failed to acquire lock for key "${key}"`
+        const keyName = this.getKeyName(key)
 
-          const result = await this.redisClient.acquireLock(
-            keyName,
-            ownerId,
-            args?.expire ? timeoutSeconds : 0,
-            awaitQueue
-          )
-
-          if (result === 1) {
-            break
-          } else {
-            if (awaitQueue) {
-              // Wait before retrying with exponential backoff and jitter
-              const jitteredDelay = retryDelay * (0.5 + Math.random() * 0.5)
-              await delay(jitteredDelay)
-
-              retryDelay = Math.min(
-                retryDelay * this.backoffFactor,
-                this.maximumRetryInterval
-              )
-            } else {
+        const acquireLock = async () => {
+          while (true) {
+            if (cancellationToken?.cancelled) {
               throw new MedusaError(MedusaError.Types.CONFLICT, errMessage)
+            }
+
+            const result = await this.redisClient.acquireLock(
+              keyName,
+              ownerId,
+              args?.expire ? timeoutSeconds : 0,
+              awaitQueue
+            )
+
+            if (result === 1) {
+              acquiredKeys.add(key)
+              break
+            } else {
+              if (awaitQueue) {
+                // Wait before retrying with exponential backoff and jitter
+                const jitteredDelay = retryDelay * (0.5 + Math.random() * 0.5)
+                await delay(jitteredDelay)
+
+                retryDelay = Math.min(
+                  retryDelay * this.backoffFactor,
+                  this.maximumRetryInterval
+                )
+              } else {
+                throw new MedusaError(MedusaError.Types.CONFLICT, errMessage)
+              }
             }
           }
         }
+
+        await acquireLock()
+      })
+
+      await promiseAll(acquirePromises)
+    } catch (error) {
+      if (acquiredKeys.size > 0) {
+        await promiseAll(
+          Array.from(acquiredKeys).map((k) =>
+            this.redisClient
+              .releaseLock(this.getKeyName(k), ownerId)
+              .catch(() => {})
+          )
+        )
       }
 
-      await acquireLock()
-    })
-
-    await promiseAll(acquirePromises)
+      throw error
+    }
   }
 
   async release(

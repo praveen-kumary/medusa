@@ -110,51 +110,69 @@ export class InMemoryLockingProvider implements ILockingProvider {
   ): Promise<void> {
     keys = Array.isArray(keys) ? keys : [keys]
     const { ownerId, expire } = args ?? {}
+    const acquiredKeys: string[] = []
 
-    for (const key of keys) {
-      const lock = this.locks.get(key)
-      const now = Date.now()
+    try {
+      for (const key of keys) {
+        const lock = this.locks.get(key)
+        const now = Date.now()
 
-      if (!lock) {
-        this.locks.set(key, {
-          ownerId: ownerId ?? null,
-          expiration: expire ? now + expire * 1000 : null,
-          currentPromise: this.getPromise(),
-        })
+        if (!lock) {
+          this.locks.set(key, {
+            ownerId: ownerId ?? null,
+            expiration: expire ? now + expire * 1000 : null,
+            currentPromise: this.getPromise(),
+          })
+          acquiredKeys.push(key)
 
-        continue
-      }
-
-      if (lock.expiration && lock.expiration <= now) {
-        lock.currentPromise?.resolve?.()
-        this.locks.set(key, {
-          ownerId: ownerId ?? null,
-          expiration: expire ? now + expire * 1000 : null,
-          currentPromise: this.getPromise(),
-        })
-
-        continue
-      }
-
-      if (lock.ownerId !== null && lock.ownerId === ownerId) {
-        if (expire) {
-          lock.expiration = now + expire * 1000
-          this.locks.set(key, lock)
+          continue
         }
 
-        continue
-      }
+        if (lock.expiration && lock.expiration <= now) {
+          lock.currentPromise?.resolve?.()
+          this.locks.set(key, {
+            ownerId: ownerId ?? null,
+            expiration: expire ? now + expire * 1000 : null,
+            currentPromise: this.getPromise(),
+          })
+          acquiredKeys.push(key)
 
-      if (lock.currentPromise && args?.awaitQueue) {
-        await lock.currentPromise.promise
-        if (cancellationToken?.cancelled) {
-          return
+          continue
         }
 
-        return this.acquire_(keys, args, cancellationToken)
-      }
+        if (lock.ownerId !== null && lock.ownerId === ownerId) {
+          if (expire) {
+            lock.expiration = now + expire * 1000
+            this.locks.set(key, lock)
+          }
 
-      throw new Error(`Failed to acquire lock for key "${key}"`)
+          continue
+        }
+
+        if (lock.currentPromise && args?.awaitQueue) {
+          await lock.currentPromise.promise
+          if (cancellationToken?.cancelled) {
+            return
+          }
+
+          for (const k of acquiredKeys) {
+            const l = this.locks.get(k)
+            l?.currentPromise?.resolve?.()
+            this.locks.delete(k)
+          }
+
+          return this.acquire_(keys, args, cancellationToken)
+        }
+
+        throw new Error(`Failed to acquire lock for key "${key}"`)
+      }
+    } catch (err) {
+      for (const k of acquiredKeys) {
+        const lock = this.locks.get(k)
+        lock?.currentPromise?.resolve?.()
+        this.locks.delete(k)
+      }
+      throw err
     }
   }
 
