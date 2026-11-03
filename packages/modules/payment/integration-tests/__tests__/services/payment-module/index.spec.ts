@@ -1956,6 +1956,24 @@ moduleIntegrationTestRunner<IPaymentModuleService>({
             )
           })
 
+          it("should mark the payment session as canceled and update payment collection on cancelPayment", async () => {
+            await service.cancelPayment("pay-id-2")
+
+            const session = await service.retrievePaymentSession("pay-sess-id-2")
+            expect(session.status).toEqual(PaymentSessionStatus.CANCELED)
+
+            const collection = await service.retrievePaymentCollection("pay-col-id-2")
+            expect(collection.status).not.toEqual(PaymentCollectionStatus.AUTHORIZED)
+          })
+
+          it("should throw if authorizing a payment session with a canceled payment", async () => {
+            await service.cancelPayment("pay-id-2")
+
+            await expect(
+              service.authorizePaymentSession("pay-sess-id-2", {})
+            ).rejects.toThrow("Payment session: pay-sess-id-2 has been canceled.")
+          })
+
           // TODO: revisit when totals are implemented
           // it("should throw if trying to cancel a captured payment", async () => {
           //   await service.capturePayment({ payment_id: "pay-id-2", amount: 100 })

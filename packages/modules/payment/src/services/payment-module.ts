@@ -552,6 +552,7 @@ export default class PaymentModuleService
       {
         select: [
           "id",
+          "status",
           "data",
           "provider_id",
           "amount",
@@ -566,8 +567,22 @@ export default class PaymentModuleService
     )
 
     // this method needs to be idempotent
-    if (session.payment && session.authorized_at) {
+    if (
+      session.payment &&
+      session.authorized_at &&
+      !session.payment.canceled_at
+    ) {
       return await this.baseRepository_.serialize<PaymentDTO>(session.payment)
+    }
+
+    if (
+      session.status === PaymentSessionStatus.CANCELED ||
+      session.payment?.canceled_at
+    ) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        `Payment session: ${session.id} has been canceled.`
+      )
     }
 
     let { data, status } = await this.paymentProviderService_.authorizePayment(
@@ -1215,7 +1230,15 @@ export default class PaymentModuleService
   ): Promise<PaymentDTO> {
     const payment = await this.paymentService_.retrieve(
       paymentId,
-      { select: ["id", "data", "provider_id"] },
+      {
+        select: [
+          "id",
+          "data",
+          "provider_id",
+          "payment_collection_id",
+          "payment_session_id",
+        ],
+      },
       sharedContext
     )
 
@@ -1233,6 +1256,23 @@ export default class PaymentModuleService
       { id: paymentId, canceled_at: new Date(), data },
       sharedContext
     )
+
+    if (payment.payment_session_id) {
+      await this.paymentSessionService_.update(
+        {
+          id: payment.payment_session_id,
+          status: PaymentSessionStatus.CANCELED,
+        },
+        sharedContext
+      )
+    }
+
+    if (payment.payment_collection_id) {
+      await this.maybeUpdatePaymentCollection_(
+        payment.payment_collection_id,
+        sharedContext
+      )
+    }
 
     return await this.retrievePayment(payment.id, {}, sharedContext)
   }
